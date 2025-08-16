@@ -927,13 +927,6 @@ python3 iseeu_toolkit.py --empire \
 
 ---
 
-## 🆘 Getting Help
-
-### 📞 **Support Channels**
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/kishwordulal1234/i-see-u/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/kishwordulal1234/i-see-u/discussions)  
-- 📖 **Documentation**: [Wiki](https://github.com/kishwordulal1234/i-see-u/wiki)
-- 🔒 **Security Issues**: security@iseeu-toolkit.com
 
 ### 📋 **When Reporting Issues**
 Include:
